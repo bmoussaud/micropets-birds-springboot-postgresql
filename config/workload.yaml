@@ -7,12 +7,14 @@ metadata:
     app.kubernetes.io/name: birds
     app.kubernetes.io/part-of: micropets-app
     micropets/kind: backend
-    #apps.tanzu.vmware.com/has-tests: "true"
+    apps.tanzu.vmware.com/has-tests: "true"
+  annotations:
+    autoscaling.knative.dev/minScale: "1"
 spec:
   serviceAccountName: tap-default
   source:
     git:
-      url: https://github.com/bmoussaud/my-birds-svc
+      url: https://github.com/bmoussaud/micropets-birds-springboot-postgresql
       ref:
         branch: main
   env:
@@ -34,7 +36,7 @@ spec:
     - name: port
       value: 8080
     - name: observability
-      value: false
-    - name: annotations
+      value: false         
+    - name: testing_pipeline_matching_labels
       value:
-        autoscaling.knative.dev/minScale: "1"
+        apps.tanzu.vmware.com/pipeline: micropets-skip-test
