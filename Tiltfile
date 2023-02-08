@@ -4,7 +4,7 @@ NAMESPACE = os.getenv("NAMESPACE", default='dev-tap')
 
 allow_k8s_contexts('aks-eu-tap-2')
 
-k8s_yaml(["config/app-operator/postgresql.yaml","config/app-operator/postgresqlResourceClaim.yaml"])
+k8s_yaml(["config/app-operator/tanzu-postgresql.yaml")
 
 k8s_custom_deploy(
     'birds',
