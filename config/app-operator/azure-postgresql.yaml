@@ -1,0 +1,215 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database-instances-fr
+---
+apiVersion: resources.azure.com/v1beta20200601
+kind: ResourceGroup
+metadata:
+  name: database-instances-fr
+  namespace: database-instances-fr
+spec:
+  location: francecentral
+---
+apiVersion: secretgen.k14s.io/v1alpha1
+kind: Password
+metadata:
+  name: birds-psql-secret
+  namespace: database-instances-fr
+spec:
+  length: 24
+  secretTemplate:
+    type: Opaque
+    stringData:
+      password: 123%ABC#$(value)
+---
+apiVersion: dbforpostgresql.azure.com/v1beta20210601
+kind: FlexibleServersDatabase
+metadata:
+  name: birds-psql
+  namespace: database-instances-fr
+spec:
+  azureName: birds-psql-demo
+  owner:
+    name: birds-psql-srv
+  charset: utf8
+---
+apiVersion: dbforpostgresql.azure.com/v1beta20210601
+kind: FlexibleServersFirewallRule
+metadata:
+  name: birds-psql-fw
+  namespace: database-instances-fr
+spec:
+  owner:
+    name: birds-psql-srv
+  startIpAddress: 0.0.0.0
+  endIpAddress: 255.255.255.255
+---
+apiVersion: dbforpostgresql.azure.com/v1beta20210601
+kind: FlexibleServer
+metadata:
+  name: birds-psql-srv
+  namespace: database-instances-fr
+spec:
+  location: francecentral
+  azureName: birds-demo
+  owner:
+    name: database-instances-fr
+  version: "14"
+  sku:
+    name: Standard_B1ms
+    tier: Burstable
+  administratorLogin: myAdmin
+  administratorLoginPassword:
+    name: birds-psql-secret
+    key: password
+  storage:
+    storageSizeGB: 32
+  backup:
+    backupRetentionDays: 7
+    geoRedundantBackup: Disabled
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: azure-postgres
+spec:
+  description:
+    short: Azure Flexible Server instances with a postgresql engine
+  pool:
+    kind: Secret
+    labelSelector:
+      matchLabels:
+        services.apps.tanzu.vmware.com/class: azure-postgres
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: servicebinding-controller-secret-reader
+  labels:
+    servicebinding.io/controller: "true"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ResourceClaimPolicy
+metadata:
+  name: developer-in-dev-tap-can-claim-azure-postgres
+  namespace: database-instances-fr
+spec:
+  subject:
+    kind: Secret
+    group: ""
+    selector:
+      matchLabels:
+        services.apps.tanzu.vmware.com/class: azure-postgres
+  consumingNamespaces:
+  - dev-tap
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: birds-psql-reader
+  namespace: database-instances-fr
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: birds-psql-reading
+  namespace: database-instances-fr
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  resourceNames:
+  - birds-psql-secret
+- apiGroups:
+  - dbforpostgresql.azure.com
+  resources:
+  - flexibleservers
+  - flexibleserversdatabases
+  verbs:
+  - get
+  - list
+  - watch
+  - fetch
+  resourceNames:
+  - birds-psql
+  - birds-psql-srv
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: birds-psql-reader-to-read
+  namespace: database-instances-fr
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: birds-psql-reading
+subjects:
+- kind: ServiceAccount
+  name: birds-psql-reader
+  namespace: database-instances-fr
+---
+apiVersion: secretgen.carvel.dev/v1alpha1
+kind: SecretTemplate
+metadata:
+  name: birds-psql-bindable
+  namespace: database-instances-fr
+spec:
+  serviceAccountName: birds-psql-reader
+  inputResources:
+  - name: server
+    ref:
+      apiVersion: dbforpostgresql.azure.com/v1alpha1api20210601
+      kind: FlexibleServer
+      name: birds-psql-srv
+  - name: db
+    ref:
+      apiVersion: dbforpostgresql.azure.com/v1alpha1api20210601
+      kind: FlexibleServersDatabase
+      name: birds-psql
+  - name: creds
+    ref:
+      apiVersion: v1
+      kind: Secret
+      name: $(.server.spec.administratorLoginPassword.name)
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: birds-psql
+        app.kubernetes.io/instance: $(.server.metadata.name)
+        services.apps.tanzu.vmware.com/class: azure-postgres
+    type: postgresql
+    stringData:
+      type: postgresql
+      port: "5432"
+      database: $(.db.status.name)
+      host: $(.server.status.fullyQualifiedDomainName)
+      username: $(.server.status.administratorLogin)
+    data:
+      password: $(.creds.data.password)
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ResourceClaim
+metadata:
+  name: birds-azure-postgresql-database
+  namespace: dev-tap
+spec:
+  ref:
+    apiVersion: v1
+    kind: Secret
+    name: birds-psql-bindable
+    namespace: database-instances-fr
