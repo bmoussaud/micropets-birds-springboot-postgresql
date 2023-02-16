@@ -7,4 +7,5 @@ CREATE TABLE Bird (
     age integer,
     url VARCHAR(255),
     uri VARCHAR(255),
-    hostname VARCHAR(255));
+    hostname VARCHAR(255),
+    source VARCHAR(255));

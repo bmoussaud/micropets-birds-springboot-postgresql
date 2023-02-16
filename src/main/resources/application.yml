@@ -21,3 +21,12 @@ management:
   endpoint:
     health:
       show-details: always
+
+config:
+  from: TAP1.4
+  
+logging:
+  level:
+    org:
+      springframework: info
+

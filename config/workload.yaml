@@ -25,7 +25,7 @@ spec:
       ref:
         apiVersion: services.apps.tanzu.vmware.com/v1alpha1
         kind: ResourceClaim
-        name: birds-tanzu-postgresql-database    
+        name: micropets-dev-tanzu-postgresql-database
   params:
     - name: gitops_server_address
       value: https://github.com/
@@ -39,4 +39,4 @@ spec:
       value: false         
     - name: testing_pipeline_matching_labels
       value:
-        apps.tanzu.vmware.com/pipeline: micropets-skip-test
+        apps.tanzu.vmware.com/pipeline: skip-test

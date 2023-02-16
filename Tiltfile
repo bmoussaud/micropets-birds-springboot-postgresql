@@ -1,10 +1,10 @@
 SOURCE_IMAGE = os.getenv("SOURCE_IMAGE", default='akseutap4registry.azurecr.io/micropet-tap-birds-sources')
 LOCAL_PATH = os.getenv("LOCAL_PATH", default='.')
-NAMESPACE = os.getenv("NAMESPACE", default='dev-tap')
+NAMESPACE = os.getenv("NAMESPACE", default='micropets-dev')
 
 allow_k8s_contexts('aks-eu-tap-4')
 
-k8s_yaml(["config/app-operator/tanzu-postgresql.yaml"])
+#k8s_yaml(["config/app-operator/tanzu-postgresql.yaml"])
 
 k8s_custom_deploy(
     'birds',
