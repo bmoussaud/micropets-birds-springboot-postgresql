@@ -9,6 +9,11 @@ It provides the framework to enhance the MicroPet Application
 1. Tanzu CLI and the apps plugin v0.2.0 which are provided as part of [Tanzu Application Platform](https://network.tanzu.vmware.com/products/tanzu-application-platform)
 1. A cluster with Tanzu Application Platform, and the ["Micropets Supply Chain"](https://github.com/bmoussaud/micropets-app-operator), plus its dependencies. This supply chains concept is part of [Tanzu Application Platform](https://network.tanzu.vmware.com/products/tanzu-application-platform).
 
+## TODO
+
+* Manage Retries DB connections
+
+
 ## Running the sample
 
 

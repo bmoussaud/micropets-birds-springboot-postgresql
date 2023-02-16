@@ -1,5 +1,6 @@
 package org.moussaud.micropets.pets;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,6 +26,10 @@ public class Bird {
 
     @JsonProperty(value = "URI")
     String uri;
+
+    @JsonProperty(value = "From")
+    @Value("${service.from:LaLaLiiiiiand}")
+    String from;
 
     public Bird() {
 
@@ -98,6 +103,14 @@ public class Bird {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
 }

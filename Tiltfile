@@ -13,7 +13,7 @@ k8s_custom_deploy(
                " --source-image " + SOURCE_IMAGE +
                " --namespace " + NAMESPACE +
                " --yes >/dev/null" +
-               " && kubectl get workload birds --namespace " + NAMESPACE + " -o yaml",
+               " && kubectl get workload birds-springboot-postgresql --namespace " + NAMESPACE + " -o yaml",
     delete_cmd="tanzu apps workload delete -f config/workload.yaml --namespace " + NAMESPACE + " --yes",
     deps=['pom.xml', './target/classes'],
     container_selector='workload',
@@ -22,4 +22,4 @@ k8s_custom_deploy(
     ]
 )
 
-k8s_resource('birds', port_forwards=["8080:8080"], extra_pod_selectors=[{'serving.knative.dev/service': 'birds'}]) 
+k8s_resource('birds', port_forwards=["8080:8080"], extra_pod_selectors=[{'app.kubernetes.io/name': 'birds'}]) 
