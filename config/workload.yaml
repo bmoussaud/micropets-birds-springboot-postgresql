@@ -12,6 +12,10 @@ metadata:
     autoscaling.knative.dev/minScale: "1"
 spec:
   serviceAccountName: tap-default
+  build:
+    env:
+      - name: BP_JVM_VERSION
+        value: "17"
   source:
     git:
       url: https://github.com/bmoussaud/micropets-birds-springboot-postgresql
@@ -36,7 +40,7 @@ spec:
     - name: port
       value: 8080
     - name: observability
-      value: false         
+      value: false
     - name: testing_pipeline_matching_labels
       value:
         apps.tanzu.vmware.com/pipeline: skip-test
