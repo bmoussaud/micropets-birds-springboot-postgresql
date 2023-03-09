@@ -1,7 +1,7 @@
 apiVersion: carto.run/v1alpha1
 kind: Workload
 metadata:
-  name: birds-springboot-postgresql
+  name: birds-springboot-pg
   labels:
     apps.tanzu.vmware.com/workload-type: web
     app.kubernetes.io/name: birds
